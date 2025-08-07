@@ -1,0 +1,33 @@
+---
+whiskers:
+  version: ^2.5.1
+  filename: "catppuccin.h"
+  hex_format: "0x{{ R }}, 0x{{ G }}, 0x{{ B }}"
+---
+// The user should define these in keymap.c
+#ifndef CATPPUCCIN_FLAVOR
+#define CATPPUCCIN_FLAVOR MOCHA
+#endif
+
+#ifndef CATPPUCCIN_ACCENT
+#define CATPPUCCIN_ACCENT MAUVE
+#endif
+
+// Internal helper macros to help with concatenation and recursive evaluation of macros
+#define __CTP_CONCAT_(a, b) a##b
+#define __CTP_CONCAT(a, b) __CTP_CONCAT_(a, b)
+#define __CTP_CONCAT3_(a, b, c) a##b##c
+#define __CTP_CONCAT3(a, b, c) __CTP_CONCAT3_(a, b, c)
+
+{%- for flavor_id, flavor in flavors %}
+  {% for color_id, color in flavor.colors %}
+#define RGB_CATPPUCCIN_{{ flavor_id | upper }}_{{ color_id | upper }} {{ color.hex }}
+  {%- endfor %}
+#define RGB_CATPPUCCIN_{{ flavor_id | upper }}_ACCENT __CTP_CONCAT(RGB_CATPPUCCIN_{{ flavor_id | upper}}_, CATPPUCCIN_ACCENT)
+  {%- if loop.last %}
+    {% for color_id, color in flavor.colors %}
+#define RGB_CATPPUCCIN_{{ color_id | upper }} __CTP_CONCAT3(RGB_CATPPUCCIN_, CATPPUCCIN_FLAVOR, _{{ color_id | upper}})
+    {%- endfor %}
+#define RGB_CATPPUCCIN_ACCENT __CTP_CONCAT(RGB_CATPPUCCIN_, CATPPUCCIN_ACCENT)
+  {%- endif -%}
+{%- endfor %}
